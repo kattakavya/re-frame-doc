@@ -1,0 +1,115 @@
+***                   RE-FRAME 6 DOMINO-STEPS
+
+
+
+** SPA :
+
+   A single-page application is a web application or web site that interacts 
+with the user by dynamically rewriting the current page rather than loading 
+entire new pages from a server.
+
+   There are various techniques available that enable the browser to retain 
+a single page even when the application requires server communication.
+One of the applcation which supports the single-page application is reage
+
+** REACT :
+
+   React is also known as React.js or ReactJS is a JavaScript library
+ for building user interfaces.
+_Maintance_:
+
+ It is maintained by Facebook and a community of individual developers and
+ companies.
+ React can be used as a base in the development of single-page or mobile 
+applications.
+
+** RE-frame : 
+
+ Re-frame is a functional framework for writing SPAs in ClojureScript, 
+using Reagent.
+Being a functional framework, it is about two things:
+*****    Data
+*****  The functions which transform that data.
+
+_re-frame is often described as a 6-domino cascade:_
+
+One domino triggers the next->> which triggers the next->> et cetera->> boom->>
+boom->>boom->>until we are back at the beginning of the loop->> the dominoes
+ spring to attention again->>ready for the next iteration of the same cascade.
+
+_The six dominoes are_:
+
+Event dispatch
+Event handling
+Effect handling
+Query
+View
+DOM
+
+****** Usage:
+In order to use re-frame, you have to require both re-frame and reagent:
+(ns simple.core
+  (:require [reagent.core :as reagent]
+            [re-frame.db :as db]
+            [re-frame.core :as rf]))
+
+_Event:_
+Events are data. re-frame uses a vector format for events.
+An event is sent when something happens,it receives a new message when the user 
+clicks  a button.
+
+
+_dispatch_:
+To send an event, call rf/dispatch with the event vector as argument:
+
+Dispatching
+
+| cljs   | 	code                                                           | 
+|--------+------------------------------------------------------------------| 
+| views  | :on-click #(re-frame/dispatch [::events/name-change "Name changed!"]) |   
+| events | (re-frame/reg-event-db ::name-change                                  |   
+| db     | state {:name "Name changed!" :test "b"}                               |   
+
+                                                                       
+After dispatch puts an event into a queue for processing.
+So, an event is not processed synchronously, like a function call. 
+
+Note:
+Events are pure data cant callback functions on the wire.
+The consumer of the queue is a router which looks after the event’s processing.
+
+The router:
+
+*****   It inspects the 1st element of an event vector
+***** looks for the event handler (function) which is registered for this kind of event
+***** calls that event handler with the necessary arguments
+***** As a re-frame app developer, your job, then, is to write and register an event handler (function) for each kind of event.
+
+_Event Handling_:
+ It acts like  control logic in a re-frame application.
+ It provides effects to the applications,Event handler functions take two arguments coeffects and event, and they return effects.
+The handler function  expects two arguments:
+***** db, the current application state (the value contained in app-db)
+***** v, the event vector (what was given to dispatch)
+So the  function will have a signature like this: (fn [db v] ...).
+
+_Effect Handling_:
+It puts into action the effects returned by event handlers.
+
+_Query_:
+Query is aso know as Subscription handlers.
+take application state as an argument and run a query over it, returning something called a “materialised view” of that application state.
+When the application state changes, subscription functions are re-run by re-frame, to compute new values (new materiaised views).
+Ultimately, the data returned by query functions is used in the view functions (Domino 5).
+
+Each time application state changes, a-query-fn will be called again to compute a new materialised view (a new computation over app state) and that new value will be given to all view functions which are subscribed to :some-query-id. These view functions will then be called to compute the new DOM state (because the views depend on query results which have changed).
+
+_View Functions_:
+View functions turn data into DOM. They are “State in, Hiccup out” and they are Reagent components.
+An SPA will have lots of view functions, and collectively, they render the app’s entire UI.
+Hiccup:- Hiccup is a data format for representing HTML.
+
+_DOM_ :
+DOM- The Document Object Model (DOM) is an application programming interface (API) for valid HTML and well-formed XML documents. It defines the logical structure of documents and the way a document is accessed and manipulated.
+This is the step in which the hiccup-formatted will  returned by the view functions of Domino 5, are made real. 
+
