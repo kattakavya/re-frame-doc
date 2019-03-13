@@ -4,6 +4,7 @@
 
 ** SPA :
 
+
    A single-page application is a web application or web site that interacts 
 with the user by dynamically rewriting the current page rather than loading 
 entire new pages from a server.
@@ -14,6 +15,7 @@ One of the applcation which supports the single-page application is reage
 
 ** REACT :
 
+
    React is also known as React.js or ReactJS is a JavaScript library
  for building user interfaces.
 _Maintance_:
@@ -23,7 +25,9 @@ _Maintance_:
  React can be used as a base in the development of single-page or mobile 
 applications.
 
+
 ** RE-frame : 
+
 
  Re-frame is a functional framework for writing SPAs in ClojureScript, 
 using Reagent.
@@ -112,4 +116,8 @@ Hiccup:- Hiccup is a data format for representing HTML.
 _DOM_ :
 DOM- The Document Object Model (DOM) is an application programming interface (API) for valid HTML and well-formed XML documents. It defines the logical structure of documents and the way a document is accessed and manipulated.
 This is the step in which the hiccup-formatted will  returned by the view functions of Domino 5, are made real. 
+
+
+
+
 
