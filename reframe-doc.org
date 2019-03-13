@@ -1,9 +1,8 @@
-***                   RE-FRAME 6 DOMINO-STEPS
+﻿***                   RE-FRAME 6 DOMINO-STEPS
 
 
 
 ** SPA :
-
 
    A single-page application is a web application or web site that interacts 
 with the user by dynamically rewriting the current page rather than loading 
@@ -15,7 +14,6 @@ One of the applcation which supports the single-page application is reage
 
 ** REACT :
 
-
    React is also known as React.js or ReactJS is a JavaScript library
  for building user interfaces.
 _Maintance_:
@@ -25,9 +23,7 @@ _Maintance_:
  React can be used as a base in the development of single-page or mobile 
 applications.
 
-
 ** RE-frame : 
-
 
  Re-frame is a functional framework for writing SPAs in ClojureScript, 
 using Reagent.
@@ -62,9 +58,25 @@ Events are data. re-frame uses a vector format for events.
 An event is sent when something happens,it receives a new message when the user 
 clicks  a button.
 
+_Example:_
+
+[:delete-item 42]
+The first element in the vector is a keyword which identifies the kind of event. The further elements are optional, and can provide additional data associated with the event.
+A re-frame event is a vector in this case, it has 2 elements: [:delete-item 42]
 
 _dispatch_:
 To send an event, call rf/dispatch with the event vector as argument:
+
+   (rf/dispatch [:event-id  value1 value2])
+
+***code:
+
+(defn delete-button 
+  [item-id]
+  [:div.garbage-bin 
+     :on-click #(re-frame.core/dispatch [:delete-item item-id])])
+
+Here on-click uses re-frame's dispatch to work an event
 
 Dispatching
 
@@ -94,11 +106,35 @@ _Event Handling_:
  It provides effects to the applications,Event handler functions take two arguments coeffects and event, and they return effects.
 The handler function  expects two arguments:
 ***** db, the current application state (the value contained in app-db)
-***** v, the event vector (what was given to dispatch)
-So the  function will have a signature like this: (fn [db v] ...).
 
-_Effect Handling_:
-It puts into action the effects returned by event handlers.
+(re-frame.core/reg-event-fx   ;; a part of the re-frame API
+  :delete-item                   ;; the kind of event
+  h) 
+
+h                                            : h is said to be event handler it is used to add the effect to the event.
+re-frame.core/reg-event-fx : is used to register this h as the handler for :delete-item.
+it can take multiple coeffects and can return multiple effects
+coeffect                               :the current app state 
+
+now the application is depended upon the h,nd it returns a map of effects - a description of those changes.
+
+***code
+
+(defn h                               ;; maybe choose a better name like `delete-item`
+ [coeffects event]                    ;; `coeffects` holds the current state of the world.  
+ (let [item-id (second event)         ;; extract id from event vector
+       db      (:db coeffects)]       ;; extract the current application state
+   {:db  (dissoc-in db [:items item-id])})) ;; effect is "change app state to ..."
+
+But current "application state" is one aspect of the world which is invariably needed, and it is available by default in the :db key.
+
+_Effect handling_ :
+Domino 3 puts into action the effects returned by event handlers
+***code
+{:db  (dissoc-in db [:items 2486])}   ;; db is a map of some structure.
+
+here map of each key represents a kind of effect and values gives the details.
+coming to this application ,in h we have one key so it is represnting with one effect.
 
 _Query_:
 Query is aso know as Subscription handlers.
@@ -106,18 +142,41 @@ take application state as an argument and run a query over it, returning somethi
 When the application state changes, subscription functions are re-run by re-frame, to compute new values (new materiaised views).
 Ultimately, the data returned by query functions is used in the view functions (Domino 5).
 
+*** code
+(defn query-fn
+  [db v]         ;; db is current app state, v the query vector
+  (:items db))   ;; not much of a materialised view
 Each time application state changes, a-query-fn will be called again to compute a new materialised view (a new computation over app state) and that new value will be given to all view functions which are subscribed to :some-query-id. These view functions will then be called to compute the new DOM state (because the views depend on query results which have changed).
+
+***** v, the event vector (what was given to dispatch)
+So the  function will have a signature like this: (fn [db v] ...).
+
+On program startup, such a query-fn must be associated with a query-id, (so it can be used via subscribe in domino 5) using re-frame.core/reg-sub, like this:
+
+(re-frame.core/reg-sub  ;; part of the re-frame API
+   :query-items         ;; query id  
+   query-fn)            ;; query fn
+Which says "if, in domino 5, you see a (subscribe [:query-items]), then use query-fn to compute it".
 
 _View Functions_:
 View functions turn data into DOM. They are “State in, Hiccup out” and they are Reagent components.
 An SPA will have lots of view functions, and collectively, they render the app’s entire UI.
 Hiccup:- Hiccup is a data format for representing HTML.
+The query function for :query-items just re-computed a new value, any view (function) which uses a (subscribe [:query-items]) is called automatically (reactively) to re-compute new DOM.
+***code
+
+(defn items-view
+  []
+  (let [items  (subscribe [:query-items])]  ;; source items from app state
+    [:div (map item-render @items)]))   ;; assume item-render already written
+
+Here items is "sourced" from "app state" via re-frame.core/subscribe. It is called with a vector argument, and the first element of that vector is a query-id which identifies the "materialised view" required by the view.
+here we expect the sql query function like,
+select * from Items where colour="blue". were the vector identifies first the query and then supplies further arguments.
 
 _DOM_ :
 DOM- The Document Object Model (DOM) is an application programming interface (API) for valid HTML and well-formed XML documents. It defines the logical structure of documents and the way a document is accessed and manipulated.
-This is the step in which the hiccup-formatted will  returned by the view functions of Domino 5, are made real. 
-
-
+This is the step in which the hiccup-formatted will   made to real browser. 
 
 
 
